@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:8080/api/hospedes';
+const API_URL = '/api/hospedes';
 let baseHospedes = [];
 
 // ── MÁSCARAS ──
