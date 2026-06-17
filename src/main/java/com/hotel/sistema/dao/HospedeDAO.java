@@ -123,7 +123,8 @@ public class HospedeDAO implements IDAO {
         Hospede filtro = (Hospede) entidade;
         List<EntidadeDominio> resultados = new ArrayList<>();
 
-        StringBuilder sql = new StringBuilder("SELECT * FROM hospedes WHERE 1=1");
+        // CORREÇÃO: A base da query agora sempre garante que o hóspede esteja ativo
+        StringBuilder sql = new StringBuilder("SELECT * FROM hospedes WHERE ativo = true");
         ArrayList<Object> params = new ArrayList<>();
 
         if (filtro.getCpf() != null && !filtro.getCpf().isEmpty()) {
@@ -138,8 +139,6 @@ public class HospedeDAO implements IDAO {
         } else if (filtro.getNomeCompleto() != null && !filtro.getNomeCompleto().isEmpty()) {
             sql.append(" AND nome_completo LIKE ?");
             params.add("%" + filtro.getNomeCompleto() + "%");
-        } else {
-            sql.append(" AND ativo = true");
         }
 
         try (Connection conn = getConexao(); PreparedStatement stmt = conn.prepareStatement(sql.toString())) {

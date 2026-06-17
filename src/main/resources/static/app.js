@@ -182,47 +182,59 @@ async function salvarHospede() {
 }
 
 function prepararEdicao(id) {
-    const h = baseHospedes.find(i => i.id === id);
-    if (!h) return;
+    try {
+        // Correção de tipagem para garantir a localização do objeto
+        const h = baseHospedes.find(i => String(i.id) === String(id));
+        
+        if (!h) {
+            throw new Error('Hóspede não localizado na base de dados atual.');
+        }
 
-    limparFormulario();
-    document.getElementById('hospede-id').value = h.id;
-    document.getElementById('cad-nome').value = h.nomeCompleto || '';
+        limparFormulario();
+        
+        document.getElementById('hospede-id').value = h.id;
+        document.getElementById('cad-nome').value = h.nomeCompleto || '';
 
-    const cpfEl = document.getElementById('cad-cpf');
-    cpfEl.value = h.cpf || '';
-    cpfEl.dispatchEvent(new Event('input'));
+        const cpfEl = document.getElementById('cad-cpf');
+        cpfEl.value = h.cpf || '';
+        cpfEl.dispatchEvent(new Event('input'));
 
-    if (h.dataNascimento) {
-        const d = Array.isArray(h.dataNascimento)
-            ? `${h.dataNascimento[0]}-${String(h.dataNascimento[1]).padStart(2,'0')}-${String(h.dataNascimento[2]).padStart(2,'0')}`
-            : h.dataNascimento.split('T')[0];
-        document.getElementById('cad-nascimento').value = d;
+        if (h.dataNascimento) {
+            const d = Array.isArray(h.dataNascimento)
+                ? `${h.dataNascimento[0]}-${String(h.dataNascimento[1]).padStart(2,'0')}-${String(h.dataNascimento[2]).padStart(2,'0')}`
+                : h.dataNascimento.split('T')[0];
+            document.getElementById('cad-nascimento').value = d;
+        }
+
+        const telEl = document.getElementById('cad-telefone');
+        telEl.value = h.telefone || '';
+        telEl.dispatchEvent(new Event('input'));
+
+        document.getElementById('cad-email').value = h.email || '';
+
+        if (h.endereco) {
+            const cepEl = document.getElementById('cad-cep');
+            cepEl.value = h.endereco.cep || '';
+            cepEl.dispatchEvent(new Event('input'));
+            document.getElementById('cad-logradouro').value  = h.endereco.logradouro  || '';
+            document.getElementById('cad-numero').value      = h.endereco.numero       || '';
+            document.getElementById('cad-complemento').value = h.endereco.complemento  || '';
+            document.getElementById('cad-bairro').value      = h.endereco.bairro       || '';
+            document.getElementById('cad-cidade').value      = h.endereco.cidade       || '';
+            document.getElementById('cad-estado').value      = h.endereco.estado       || '';
+        }
+
+        document.getElementById('page-title').innerText = `Editando Hóspede #${h.id}`;
+        document.getElementById('page-breadcrumb').innerText = `Início / Hóspedes / Editar #${h.id}`;
+        document.getElementById('form-title').innerText = `Editar Hóspede — ${h.nomeCompleto}`;
+        document.getElementById('form-subtitle').innerText = `ID #${h.id} · Atualize os campos desejados e salve`;
+        
+        mostrarTela('cadastro');
+
+    } catch (error) {
+        console.error("[Erro] Falha ao preparar edição:", error);
+        mostrarAlerta(error.message || "Ocorreu um erro ao carregar os dados para edição.", false);
     }
-
-    const telEl = document.getElementById('cad-telefone');
-    telEl.value = h.telefone || '';
-    telEl.dispatchEvent(new Event('input'));
-
-    document.getElementById('cad-email').value = h.email || '';
-
-    if (h.endereco) {
-        const cepEl = document.getElementById('cad-cep');
-        cepEl.value = h.endereco.cep || '';
-        cepEl.dispatchEvent(new Event('input'));
-        document.getElementById('cad-logradouro').value  = h.endereco.logradouro  || '';
-        document.getElementById('cad-numero').value      = h.endereco.numero       || '';
-        document.getElementById('cad-complemento').value = h.endereco.complemento  || '';
-        document.getElementById('cad-bairro').value      = h.endereco.bairro       || '';
-        document.getElementById('cad-cidade').value      = h.endereco.cidade       || '';
-        document.getElementById('cad-estado').value      = h.endereco.estado       || '';
-    }
-
-    document.getElementById('page-title').innerText = `Editando Hóspede #${h.id}`;
-    document.getElementById('page-breadcrumb').innerText = `Início / Hóspedes / Editar #${h.id}`;
-    document.getElementById('form-title').innerText = `Editar Hóspede — ${h.nomeCompleto}`;
-    document.getElementById('form-subtitle').innerText = `ID #${h.id} · Atualize os campos desejados e salve`;
-    mostrarTela('cadastro');
 }
 
 async function inativarHospede(id) {
@@ -240,7 +252,8 @@ async function inativarHospede(id) {
 
 function limparFormulario() {
     document.getElementById('hospede-id').value = '';
-    document.querySelectorAll('#tela-cadastro input[type!="hidden"]').forEach(i => i.value = '');
+    // Correção crítica: Uso do seletor CSS válido :not()
+    document.querySelectorAll('#tela-cadastro input:not([type="hidden"])').forEach(i => i.value = '');
 }
 
 // ── INIT ──
