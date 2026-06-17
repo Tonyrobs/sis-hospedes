@@ -1,11 +1,11 @@
 # Build
-FROM maven:3.8.5-openjdk-17 AS build
+FROM mcr.microsoft.com/openjdk/jdk:17-mariner AS build
 COPY . .
-RUN mvn clean package -DskipTests
+# Copia o código e roda o build do Maven. Se você usa o wrapper do maven (mvnw), altere para: RUN ./mvnw clean package -DskipTests
+RUN apt-get update && apt-get install -y maven && mvn clean package -DskipTests
 
 # Execução
-FROM eclipse/compose-api AS base
-FROM docker.io/eclipse-temurin:17-jre-slim
+FROM public.ecr.aws/amazoncorretto/amazoncorretto:17-alpine
 COPY --from=build /target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
